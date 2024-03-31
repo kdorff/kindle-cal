@@ -1,5 +1,8 @@
+import fs from "fs";
 import { chromium } from "playwright";
 import sharp from "sharp";
+// @ts-ignore
+import { PNG } from "pngjs/browser";
 
 /**
  * Take a screenshot of a web page.
@@ -36,33 +39,50 @@ async function grabScreenshot(url: string): Promise<Buffer> {
  * @param imageBuffer png image to transform
  * @returns Buffer for transformed png image
  */
-async function transformImage(
-  imageBuffer: Buffer
-): Promise<Buffer | undefined> {
-  let rotatedGrayscaleImage = undefined;
+async function rotateImage(imageBuffer: Buffer): Promise<Buffer | undefined> {
+  let rotatedImage = undefined;
   console.log("Transforming image");
   await sharp(imageBuffer)
     .rotate(-90)
-    .grayscale(true)
-    .png({ colors: 2 })
-    .toColorspace("grey8")
     .toBuffer()
     .then((info) => {
       console.log("Transform implage completed", info);
-      rotatedGrayscaleImage = info;
+      rotatedImage = info;
     })
     .catch((err) => {
       console.log("Transform implage FAILED", err);
     });
-  return rotatedGrayscaleImage;
+  return rotatedImage;
+}
+
+async function greyscaleImage(
+  imageBuffer: Buffer | undefined
+): Promise<Buffer | undefined> {
+  if (!imageBuffer) {
+    return undefined;
+  }
+  fs.writeFileSync("/tmp/test-color.png", imageBuffer);
+  const png = new PNG({
+    width: 600,
+    height: 800,
+    colorType: 0,
+  });
+  const src = fs.createReadStream("/tmp/test-color.png");
+  const dst = fs.createWriteStream("/tmp/test-gray.png");
+  png.on("parsed", function () {
+    png.pack().pipe(dst);
+  });
+  await src.pipe(png);
+  return fs.readFileSync("/tmp/test-gray.png");
 }
 
 export async function GET() {
   const imageBuffer = await grabScreenshot("http://localhost:3000");
-  const transformedImage = await transformImage(imageBuffer);
+  const rotatedImage = await rotateImage(imageBuffer);
+  const greyscaledImage = await greyscaleImage(rotatedImage);
 
-  console.log("Returning png", transformedImage);
-  const response = new Response(transformedImage);
+  console.log("Returning png", greyscaledImage);
+  const response = new Response(greyscaledImage);
   response.headers.set("content-type", "image/png");
   response.headers.set("Cache-Control", "no-store");
   return response;
