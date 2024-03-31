@@ -24,7 +24,10 @@ const KindleCal = () => {
       </div>
       <div className="font-black w-full mx-auto h-[45 0px] flex-row">
         <div className="text-[6rem]">{formattedDate}</div>
-        <div className="text-[5rem] pt-4s">after {currentTime}</div>
+        <div className="text-[5rem] pt-4s">
+          <span className="italic">after</span>{" "}
+          <span className="pl-2">{currentTime}</span>
+        </div>
       </div>
     </div>
   );

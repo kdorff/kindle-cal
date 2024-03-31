@@ -42,8 +42,16 @@ async function grabScreenshot(url: string): Promise<Buffer> {
 async function rotateImage(imageBuffer: Buffer): Promise<Buffer | undefined> {
   let rotatedImage = undefined;
   console.log("Transforming image");
+  // Greyscaling doesn't seem to work correct with sharp to
+  // get an impage that is compat with Kindle. It generally
+  // renders as RGB without repect to color space, etc.
+  // Maybe if there check for grey4? grey16? Unsure.
+  // 2 colors? 4? 8? 16?
   await sharp(imageBuffer)
     .rotate(-90)
+    .grayscale(true)
+    .toColorspace("b-w")
+    .png({ colors: 2 })
     .toBuffer()
     .then((info) => {
       console.log("Transform implage completed", info);
@@ -55,31 +63,27 @@ async function rotateImage(imageBuffer: Buffer): Promise<Buffer | undefined> {
   return rotatedImage;
 }
 
-async function greyscaleImage(
-  imageBuffer: Buffer | undefined
-): Promise<Buffer | undefined> {
+/**
+ * Convert the png image Buffer in imageBuffer to grayscale.
+ * @param imageBuffer image as Buffer to grayscale
+ * @returns image Buffer in grayscale
+ */
+function greyscaleImage(imageBuffer: Buffer | undefined): Buffer | undefined {
   if (!imageBuffer) {
     return undefined;
   }
-  fs.writeFileSync("/tmp/test-color.png", imageBuffer);
-  const png = new PNG({
+  const png = PNG.sync.read(imageBuffer);
+  return PNG.sync.write(png, {
     width: 600,
     height: 800,
     colorType: 0,
   });
-  const src = fs.createReadStream("/tmp/test-color.png");
-  const dst = fs.createWriteStream("/tmp/test-gray.png");
-  png.on("parsed", function () {
-    png.pack().pipe(dst);
-  });
-  await src.pipe(png);
-  return fs.readFileSync("/tmp/test-gray.png");
 }
 
 export async function GET() {
   const imageBuffer = await grabScreenshot("http://localhost:3000");
   const rotatedImage = await rotateImage(imageBuffer);
-  const greyscaledImage = await greyscaleImage(rotatedImage);
+  const greyscaledImage = greyscaleImage(rotatedImage);
 
   console.log("Returning png", greyscaledImage);
   const response = new Response(greyscaledImage);
