@@ -44,8 +44,8 @@ async function transformImage(
   await sharp(imageBuffer)
     .rotate(-90)
     .grayscale(true)
-    .png({ colors: 16 })
-    .toColorspace("grey16")
+    .png({ colors: 256 })
+    .toColorspace("grey8")
     .toBuffer()
     .then((info) => {
       console.log("Transform implage completed", info);
