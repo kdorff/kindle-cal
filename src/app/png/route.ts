@@ -43,7 +43,9 @@ async function transformImage(
   console.log("Transforming image");
   await sharp(imageBuffer)
     .rotate(-90)
-    .grayscale()
+    .grayscale(true)
+    .png({ colors: 16 })
+    .toColorspace("grey16")
     .toBuffer()
     .then((info) => {
       console.log("Transform implage completed", info);
