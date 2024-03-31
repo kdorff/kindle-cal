@@ -17,6 +17,10 @@ export async function GET() {
   console.log("Taking screenshot");
   const imageBuffer = await page.screenshot();
 
+  // Close the browser
+  page.close();
+  browser.close();
+
   // Rotate the image.
   console.log("Rating the image");
   const rotatedImageBuffer = await sharp(imageBuffer)

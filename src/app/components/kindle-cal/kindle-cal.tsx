@@ -12,7 +12,7 @@ const KindleCal = () => {
   });
   const currentTime = now.toLocaleTimeString("en-US", {
     hour: "numeric",
-    minute: undefined,
+    minute: "2-digit",
     hour12: true,
     timeZone: "America/Chicago",
   });
@@ -22,9 +22,9 @@ const KindleCal = () => {
       <div className="text-4xl font-black w-full h-[150px] pt-[50px]">
         Today is...
       </div>
-      <div className="text-[6rem] font-black w-full mx-auto h-[45 0px] flex-row">
-        <div>{formattedDate}</div>
-        <div className="pt-4s">it was {currentTime}</div>
+      <div className="font-black w-full mx-auto h-[45 0px] flex-row">
+        <div className="text-[6rem]">{formattedDate}</div>
+        <div className="text-[5rem] pt-4s">after {currentTime}</div>
       </div>
     </div>
   );
