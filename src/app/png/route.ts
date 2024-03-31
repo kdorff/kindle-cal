@@ -27,38 +27,35 @@ async function grabScreenshot(url: string): Promise<Buffer> {
     return await page.screenshot();
   } finally {
     // Close the browser
-    page && page.close();
     browser && browser.close();
   }
 }
 
 /**
- * Transform the png image in imageBuffer
- * by rotating it 90 degreesleft and converting it to grayscale.
- * Return as a png image in a Buffer
- * @param imageBuffer png image to transform
+ * Rotate the png image in imageBuffer 90 degreesleft.
+ * @param imageBuffer png image as Biffer to rotate
  * @returns Buffer for transformed png image
  */
 async function rotateImage(imageBuffer: Buffer): Promise<Buffer | undefined> {
   let rotatedImage = undefined;
-  console.log("Transforming image");
+  console.log("Rotating image");
   // Greyscaling doesn't seem to work correct with sharp to
   // get an impage that is compat with Kindle. It generally
   // renders as RGB without repect to color space, etc.
   // Maybe if there check for grey4? grey16? Unsure.
-  // 2 colors? 4? 8? 16?
+  // I severalal thing things including...
+  //   .grayscale(true)
+  //   .toColorspace("b-w")
+  //   .png({ colors: 2 })
   await sharp(imageBuffer)
     .rotate(-90)
-    .grayscale(true)
-    .toColorspace("b-w")
-    .png({ colors: 2 })
     .toBuffer()
     .then((info) => {
-      console.log("Transform implage completed", info);
+      console.log("Rotate image completed");
       rotatedImage = info;
     })
     .catch((err) => {
-      console.log("Transform implage FAILED", err);
+      console.log("Rotate image FAILED", err);
     });
   return rotatedImage;
 }
@@ -85,7 +82,7 @@ export async function GET() {
   const rotatedImage = await rotateImage(imageBuffer);
   const greyscaledImage = greyscaleImage(rotatedImage);
 
-  console.log("Returning png", greyscaledImage);
+  console.log("Returning png");
   const response = new Response(greyscaledImage);
   response.headers.set("content-type", "image/png");
   response.headers.set("Cache-Control", "no-store");
