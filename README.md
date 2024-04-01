@@ -84,3 +84,9 @@ docker compose pull &&
 The application should then be running on
 `http://dockerhost:3400` where **dockerhost** is the name or
 ip address of the machine running docker.
+
+# Revisions
+
+If you have great ideas, feel free to make a PR with suggested changes.
+
+The content of the dashboard is within [src/app/components/kindle-cal/kindle-cal.tsx](https://github.com/kdorff/kindle-cal/blob/master/src/app/components/kindle-cal/kindle-cal.tsx)
