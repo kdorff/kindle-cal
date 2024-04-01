@@ -11,7 +11,7 @@ PNG that is appropriate for a Kindle.
 
 <img src="screenshot.png" alt="kindle-cal" width="50%">
 
-On the Kindle side, I'm also using a modified version of
+On the Kindle side, I'm using a modified version of
 https://github.com/kdorff/kindle-dash. I will be updating my
 fork with my changes (notably remoing the `xh` binary that
 was failing on my Kindle).
