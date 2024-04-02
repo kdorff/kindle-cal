@@ -3,7 +3,7 @@ import React from "react";
 // const fetch = require("node-fetch");
 
 const KindleCal = () => {
-  const TZ = process.env.TZ || "America/Chicago";
+  const TZ = process.env.TZ || "US/Central";
   const now = new Date();
   console.log(`TZ=${TZ}, now=${now}`);
   const formattedDate = now.toLocaleDateString("en-US", {
