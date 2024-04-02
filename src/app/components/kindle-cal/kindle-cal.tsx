@@ -25,10 +25,13 @@ const KindleCal = () => {
     const HA_URL = process.env.HA_URL || null;
     const HA_TOKEN = process.env.HA_TOKEN || null;
 
-    async function fetchBatteryLevel() {
+    async function fetchBatteryLevel(): Promise<number | null> {
       if (!HA_URL || !HA_TOKEN) {
         // No HA. Just always return 100.
-        return { state: 100 };
+        console.error(
+          "HA_URL or HA_TOKEN not defined. Not reading battery state from HA."
+        );
+        return null;
       }
       const response = await fetch(HA_URL, {
         cache: "no-store",
@@ -38,15 +41,15 @@ const KindleCal = () => {
         },
       });
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error("Could not read battery level from HA");
+        return null;
       }
       const json = await response.json();
-      return json;
+      return parseInt(json.state);
     }
 
-    const batteryLevelState = await fetchBatteryLevel();
-    console.log(batteryLevelState);
-    return <>{batteryLevelState.state}%</>;
+    const batteryLevel = await fetchBatteryLevel();
+    return <>{batteryLevel != null && <>Battery Level {batteryLevel}%</>}</>;
   };
 
   return (
@@ -62,7 +65,7 @@ const KindleCal = () => {
         </div>
       </div>
       <div className="text-[2xl] font-bold pt-[5rem]">
-        Battery Level <BatteryLevel />
+        <BatteryLevel />
       </div>
     </div>
   );

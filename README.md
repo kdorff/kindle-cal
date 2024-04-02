@@ -29,7 +29,21 @@ git checkout https://github.com/kdorff/kindle-cal.git
 cd kindle-cal
 ```
 
-To start the application use
+**Configure your `.env.local` file**
+
+```.env.local
+TZ=US/Central
+HA_URL=http://HA_IP:8123/api/states/input_number.kindle_keyboard_battery
+HA_TOKEN=eyJhbGciOiJIU***WKMPk0GVGKqlFOMA
+```
+
+Setting `TZ` will define the timezone. If omitted, it will default to `US/Central`.
+
+`HA_URL` and `HA_TOKEN`, if defined, will read battery state using the Home Assistant
+REST API. In this, reading the state for the `input_number` helper named
+`input_number.kindle_keyboard_battery`.
+
+**To start the application**
 
 ```bash
 npm install
@@ -60,6 +74,10 @@ Add a stanza to `docker-compose.yml`
     restart: unless-stopped
     ports:
       - 3400:3000
+    environment:
+      - TZ=US/Central
+      - HA_URL=http://HA_IP:8123/api/states/input_number.kindle_keyboard_battery
+      - HA_TOKEN=eyJhbGciOiJIU***WKMPk0GVGKqlFOMA
 ```
 
 My `update-and-restart.sh` script, which also lives in the
