@@ -1,18 +1,22 @@
 import React from "react";
 
+// const fetch = require("node-fetch");
+
 const KindleCal = () => {
+  const TZ = process.env.TZ || "America/Chicago";
   const now = new Date();
+  console.log(`TZ=${TZ}, now=${now}`);
   const formattedDate = now.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "2-digit",
-    timeZone: "America/Chicago",
+    timeZone: TZ,
   });
   const currentTime = now.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
-    timeZone: "America/Chicago",
+    timeZone: TZ,
   });
 
   const BatteryLevel = async () => {
