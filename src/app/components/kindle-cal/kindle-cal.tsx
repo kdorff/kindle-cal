@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 
 const KindleCal = () => {
@@ -17,6 +15,36 @@ const KindleCal = () => {
     timeZone: "America/Chicago",
   });
 
+  const BatteryLevel = async () => {
+    "use server";
+
+    const HA_URL = process.env.HA_URL || null;
+    const HA_TOKEN = process.env.HA_TOKEN || null;
+
+    async function fetchBatteryLevel() {
+      if (!HA_URL || !HA_TOKEN) {
+        // No HA. Just always return 100.
+        return { state: 100 };
+      }
+      const response = await fetch(HA_URL, {
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${HA_TOKEN}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const json = await response.json();
+      return json;
+    }
+
+    const batteryLevelState = await fetchBatteryLevel();
+    console.log(batteryLevelState);
+    return <>{batteryLevelState.state}%</>;
+  };
+
   return (
     <div className="w-[800px] h-[600px] p-4 mx-auto rounded-lg border-4 border-black flex-col items-center justify-center">
       <div className="text-4xl font-black w-full h-[150px] pt-[50px]">
@@ -24,10 +52,13 @@ const KindleCal = () => {
       </div>
       <div className="font-black w-full mx-auto h-[45 0px] flex-row">
         <div className="text-[6rem]">{formattedDate}</div>
-        <div className="text-[5rem] pt-4s">
+        <div className="text-[5rem] pt-4">
           <span className="italic">after</span>{" "}
           <span className="pl-2">{currentTime}</span>
         </div>
+      </div>
+      <div className="text-[2xl] font-bold pt-[5rem]">
+        Battery Level <BatteryLevel />
       </div>
     </div>
   );
