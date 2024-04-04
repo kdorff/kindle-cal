@@ -1,8 +1,8 @@
 import React from "react";
+import { BatteryType } from "../../png/battery-params";
 
-// const fetch = require("node-fetch");
-
-const KindleCal = () => {
+const KindleCal = (props: Partial<BatteryType>) => {
+  console.log("KindleCal props", props);
   const TZ = process.env.TZ || "US/Central";
   const now = new Date();
   console.log(`TZ=${TZ}, now=${now}`);
@@ -65,7 +65,8 @@ const KindleCal = () => {
         </div>
       </div>
       <div className="text-[2xl] font-bold pt-[5rem]">
-        <BatteryLevel />
+        {/* <BatteryLevel /> */}
+        {props.battery != null ? `Battery Level ${props.battery}%` : null}
       </div>
     </div>
   );

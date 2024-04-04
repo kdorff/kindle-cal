@@ -3,6 +3,7 @@ import { chromium } from "playwright";
 import sharp from "sharp";
 // @ts-ignore
 import { PNG } from "pngjs/browser";
+import { parseBattery } from "./battery-params";
 
 /**
  * Take a screenshot of a web page.
@@ -22,7 +23,7 @@ async function grabScreenshot(url: string): Promise<Buffer> {
     console.log("Setting viewport size");
     await page.setViewportSize({ width: 800, height: 600 });
     console.log("Requesting URL");
-    await page.goto("http://localhost:3000");
+    await page.goto(url);
     console.log("Taking screenshot");
     return await page.screenshot();
   } finally {
@@ -77,10 +78,20 @@ function greyscaleImage(imageBuffer: Buffer | undefined): Buffer | undefined {
   });
 }
 
-export async function GET() {
-  const imageBuffer = await grabScreenshot("http://localhost:3000");
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const battery = parseBattery(searchParams);
+  console.log("battery is", battery);
+  const url = `http://localhost:3000${
+    battery != null ? "?battery=" + battery : ""
+  }`;
+  console.log("fetch url with battery", url);
+
+  const imageBuffer = await grabScreenshot(url);
   const rotatedImage = await rotateImage(imageBuffer);
   const greyscaledImage = greyscaleImage(rotatedImage);
+
+  // TODO: Send battery level to HA
 
   console.log("Returning png");
   const response = new Response(greyscaledImage);
