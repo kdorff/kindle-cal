@@ -78,10 +78,46 @@ function greyscaleImage(imageBuffer: Buffer | undefined): Buffer | undefined {
   });
 }
 
+/**
+ * Send the battery level to Home Assistant.
+ * @param battery battery level to send
+ */
+async function sendBatteryLevelToHA(battery: number) {
+  const HA_URL = process.env.HA_URL || null;
+  const HA_TOKEN = process.env.HA_TOKEN || null;
+  if (!HA_URL || !HA_TOKEN) {
+    console.error(
+      "HA_URL or HA_TOKEN not defined (check environment variables)"
+    );
+    return;
+  }
+
+  console.log("Sending battery level to HA");
+  const response = await fetch(HA_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${HA_TOKEN}`,
+    },
+    body: JSON.stringify({ state: battery }),
+  });
+
+  if (response.ok) {
+    console.log("Battery level sent to HA");
+  } else {
+    console.error(`HTTP error! status: ${response.status}`);
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const battery = parseBattery(searchParams);
   console.log("battery is", battery);
+  if (battery != null) {
+    // No need to await this
+    sendBatteryLevelToHA(battery);
+  }
+
   const url = `http://localhost:3000${
     battery != null ? "?battery=" + battery : ""
   }`;
