@@ -1,9 +1,7 @@
-import fs from "fs";
 import { chromium } from "playwright";
 import sharp from "sharp";
 // @ts-ignore
 import { PNG } from "pngjs/browser";
-import { parseBattery } from "./battery-params";
 
 /**
  * Take a screenshot of a web page.
@@ -111,12 +109,7 @@ async function sendBatteryLevelToHA(battery: number) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const battery = parseBattery(searchParams);
-  console.log("battery is", battery);
-  if (battery != null) {
-    // No need to await this
-    sendBatteryLevelToHA(battery);
-  }
+  const battery: string | null = searchParams.get("battery");
 
   const url = `http://localhost:3000${
     battery != null ? "?battery=" + battery : ""

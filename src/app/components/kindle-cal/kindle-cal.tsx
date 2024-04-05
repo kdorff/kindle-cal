@@ -1,8 +1,13 @@
-import React from "react";
-import { BatteryType } from "../../png/battery-params";
+"use client";
 
-const KindleCal = (props: Partial<BatteryType>) => {
-  console.log("KindleCal props", props);
+import React, { use, useEffect } from "react";
+
+interface KindleCalProps {
+  battery: string | null;
+}
+
+const KindleCal = (props: Partial<KindleCalProps>) => {
+  console.log("KindleCalProps", props);
   const TZ = process.env.TZ || "US/Central";
   const now = new Date();
   console.log(`TZ=${TZ}, now=${now}`);
@@ -19,38 +24,22 @@ const KindleCal = (props: Partial<BatteryType>) => {
     timeZone: TZ,
   });
 
-  const BatteryLevel = async () => {
-    "use server";
-
-    const HA_URL = process.env.HA_URL || null;
-    const HA_TOKEN = process.env.HA_TOKEN || null;
-
-    async function fetchBatteryLevel(): Promise<number | null> {
-      if (!HA_URL || !HA_TOKEN) {
-        // No HA. Just always return 100.
-        console.error(
-          "HA_URL or HA_TOKEN not defined. Not reading battery state from HA."
-        );
-        return null;
+  useEffect(() => {
+    const sendBatteryLevel = async () => {
+      if (props.battery != null) {
+        console.log(`Sending battery ${props.battery} level to HA`);
+        const response = await fetch(`/battery?battery=${props.battery}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Response from /battery", data);
+      } else {
+        console.log("No battery level to send to HA");
       }
-      const response = await fetch(HA_URL, {
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${HA_TOKEN}`,
-        },
-      });
-      if (!response.ok) {
-        console.error("Could not read battery level from HA");
-        return null;
-      }
-      const json = await response.json();
-      return parseInt(json.state);
-    }
-
-    const batteryLevel = await fetchBatteryLevel();
-    return <>{batteryLevel != null && <>Battery Level {batteryLevel}%</>}</>;
-  };
+    };
+    sendBatteryLevel().catch((error) => console.error(error));
+  }, []);
 
   return (
     <div className="w-[800px] h-[600px] p-4 mx-auto rounded-lg border-4 border-black flex-col items-center justify-center">
